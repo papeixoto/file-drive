@@ -1,5 +1,26 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation } from "./_generated/server";
+import { MutationCtx, QueryCtx, internalMutation } from "./_generated/server";
+
+export const getUser = async (
+  ctx: QueryCtx | MutationCtx,
+  tokenIdentifier: string
+) => {
+  console.log("ctx: ", !!ctx);
+  console.log("tokenIdentifier: ", tokenIdentifier);
+
+  const user = await ctx.db
+    .query("users")
+    .withIndex("by_tokenIdentifier", (q) =>
+      q.eq("tokenIdentifier", tokenIdentifier)
+    )
+    .first();
+
+  if (!user) {
+    throw new ConvexError("User not found");
+  }
+
+  return user;
+};
 
 // internal because it's not exposed to the outside world
 // we're only calling it from the clerk webhook
@@ -21,16 +42,7 @@ export const addOrgIdToUser = internalMutation({
     orgId: v.string(),
   },
   async handler(ctx, args) {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_tokenIdentifier", (q) =>
-        q.eq("tokenIdentifier", args.tokenIdentifier)
-      )
-      .first();
-
-    if (!user) {
-      throw new ConvexError("User not found");
-    }
+    const user = await getUser(ctx, args.tokenIdentifier);
 
     await ctx.db.patch(user._id, {
       orgIds: [...user.orgIds, args.orgId],
