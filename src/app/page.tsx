@@ -26,6 +26,8 @@ import { api } from "../../convex/_generated/api";
 
 import { z } from "zod";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1).max(200),
@@ -35,6 +37,7 @@ const formSchema = z.object({
 });
 
 export default function Home() {
+  const { toast } = useToast();
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   const organization = useOrganization();
   const user = useUser();
@@ -63,11 +66,25 @@ export default function Home() {
     });
 
     const { storageId } = await result.json();
-    await createFile({ name: values.title, fileId: storageId, orgId });
+    try {
+      await createFile({ name: values.title, fileId: storageId, orgId });
+    } catch (e) {
+      toast({
+        title: "Something went wrong",
+        description: "Your file could not be uploaded. Please try again.",
+        variant: "destructive",
+      });
+    }
 
     form.reset();
 
     setIsFileDialogOpen(false);
+
+    toast({
+      title: "File uploaded",
+      description: "Now everyone in your organization can see it",
+      variant: "success",
+    });
   };
 
   let orgId: string | undefined;
@@ -83,7 +100,13 @@ export default function Home() {
       <div className="flex justify-between items-center">
         <h1 className="text-4xl font-bold">Your Files</h1>
 
-        <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
+        <Dialog
+          open={isFileDialogOpen}
+          onOpenChange={(isOpen) => {
+            setIsFileDialogOpen(isOpen);
+            form.reset();
+          }}
+        >
           <DialogTrigger asChild>
             <Button>Upload File</Button>
           </DialogTrigger>
@@ -122,7 +145,15 @@ export default function Home() {
                         </FormItem>
                       )}
                     />
-                    <Button type="submit">Submit</Button>
+                    <Button
+                      type="submit"
+                      disabled={form.formState.isSubmitting}
+                    >
+                      {form.formState.isSubmitting && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Submit
+                    </Button>
                   </form>
                 </Form>
               </DialogDescription>
