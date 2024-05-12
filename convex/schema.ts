@@ -4,9 +4,16 @@ import { v } from "convex/values";
 // in prod if you need to add a field to the schema
 // orgId: v.optional(v.string())
 
+export const fileTypes = v.union(
+  v.literal("image"),
+  v.literal("csv"),
+  v.literal("pdf")
+);
+
 export default defineSchema({
   files: defineTable({
     name: v.string(),
+    type: fileTypes,
     fileId: v.id("_storage"),
     orgId: v.string(),
   }).index("by_orgId", ["orgId"]),
