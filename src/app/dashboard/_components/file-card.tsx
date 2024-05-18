@@ -32,12 +32,14 @@ import {
   MoreVertical,
   StarIcon,
   TrashIcon,
+  UndoIcon,
 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
 import { Protect } from "@clerk/nextjs";
+import clsx from "clsx";
 
 type Props = {
   file: Doc<"files">;
@@ -47,6 +49,7 @@ type Props = {
 function FileCardActions({ file, isFavorite }: Props) {
   const { toast } = useToast();
   const deleteFile = useMutation(api.files.deleteFile);
+  const restoreFile = useMutation(api.files.restoreFile);
   const toggleFavorite = useMutation(api.files.toggleFavorite);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
@@ -60,8 +63,8 @@ function FileCardActions({ file, isFavorite }: Props) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
+              This action will mark the file for our deletion process. Files are
+              deleted periodically.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -72,8 +75,8 @@ function FileCardActions({ file, isFavorite }: Props) {
                   fileId: file._id,
                 });
                 toast({
-                  title: "File deleted",
-                  description: "Your file is now gone from the system.",
+                  title: "File marked for deletion",
+                  description: "Your file will be deleted soon.",
                 });
               }}
             >
@@ -100,11 +103,27 @@ function FileCardActions({ file, isFavorite }: Props) {
           <Protect role="org:admin">
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="flex gap-1 text-red-600 items-center cursor-pointer"
-              onClick={() => setIsConfirmDeleteOpen(true)}
+              className={clsx("flex gap-1   items-center cursor-pointer", {
+                "text-green-600": file.shouldDelete,
+                "text-red-600": !file.shouldDelete,
+              })}
+              onClick={() => {
+                if (file.shouldDelete) {
+                  restoreFile({ fileId: file._id });
+                } else {
+                  setIsConfirmDeleteOpen(true);
+                }
+              }}
             >
-              <TrashIcon className="w-4 h-4" />
-              Delete
+              {file.shouldDelete ? (
+                <>
+                  <UndoIcon className="w-4 h-4" /> Restore
+                </>
+              ) : (
+                <>
+                  <TrashIcon className="w-4 h-4" /> Delete
+                </>
+              )}
             </DropdownMenuItem>
           </Protect>
         </DropdownMenuContent>
