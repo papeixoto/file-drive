@@ -1,4 +1,5 @@
 import { ReactNode, useState } from "react";
+import { formatRelative, subDays } from "date-fns";
 import {
   Card,
   CardContent,
@@ -7,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Doc, Id } from "../../../../convex/_generated/dataModel";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +25,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  FileIcon,
   FileTextIcon,
   GanttChartIcon,
   ImageIcon,
@@ -34,7 +36,7 @@ import {
   TrashIcon,
   UndoIcon,
 } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
@@ -100,6 +102,13 @@ function FileCardActions({ file, isFavorite }: Props) {
             />
             {isFavorite ? "Unfavorite" : "Favorite"}
           </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex gap-1 items-center cursor-pointer"
+            onClick={() => window.open(getFileUrl(file.fileId))}
+          >
+            <FileIcon className="w-4 h-4" />
+            Download
+          </DropdownMenuItem>
           <Protect role="org:admin">
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -136,14 +145,16 @@ function getFileUrl(fileId: Id<"_storage">): string {
   return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${fileId}`;
 }
 
-export function FileCard({ file, isFavorite }: Props) {
-  const typeIcons = {
-    image: <ImageIcon />,
-    pdf: <FileTextIcon />,
-    csv: <GanttChartIcon />,
-  } as Record<Doc<"files">["type"], ReactNode>;
+const typeIcons = {
+  image: <ImageIcon />,
+  pdf: <FileTextIcon />,
+  csv: <GanttChartIcon />,
+} as Record<Doc<"files">["type"], ReactNode>;
 
-  console.log(getFileUrl(file.fileId));
+export function FileCard({ file, isFavorite }: Props) {
+  const userProfile = useQuery(api.users.getUserProfile, {
+    userId: file.userId,
+  });
 
   return (
     <Card>
@@ -170,10 +181,16 @@ export function FileCard({ file, isFavorite }: Props) {
         {file.type === "csv" && <GanttChartIcon className="w-20 h-20" />}
         {file.type === "pdf" && <FileTextIcon className="w-20 h-20" />}
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <Button onClick={() => window.open(getFileUrl(file.fileId))}>
-          Download
-        </Button>
+      <CardFooter className="flex justify-between items-center">
+        <div className="flex gap-2 text-xs text-gray-700 w-40 items-center">
+          <Avatar className="h-8 w-8 text-sx">
+            <AvatarImage src={userProfile?.image} />
+          </Avatar>
+          {userProfile?.name}
+        </div>
+        <div className="text-xs text-gray-700">
+          Uploaded {formatRelative(new Date(file._creationTime), new Date())}
+        </div>
       </CardFooter>
     </Card>
   );

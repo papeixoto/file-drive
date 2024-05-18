@@ -65,12 +65,14 @@ export const createFile = mutation({
         "You don't have permission to create a file in this organization"
       );
     }
+    const { user } = hasAccess;
 
     await ctx.db.insert("files", {
       name: args.name,
       orgId: args.orgId,
       fileId: args.fileId,
       type: args.type,
+      userId: user._id,
     });
   },
 });
@@ -89,14 +91,10 @@ export const getFiles = query({
       return [];
     }
 
-    console.log(args);
-
     let files = await ctx.db
       .query("files")
       .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
       .collect();
-
-    console.log(files);
 
     const query = args.query;
 
