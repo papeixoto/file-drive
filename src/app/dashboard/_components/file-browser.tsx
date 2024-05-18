@@ -30,10 +30,10 @@ function Placeholder() {
 
 type Props = {
   title: string;
-  favorites?: boolean;
+  favoritesOnly?: boolean;
 };
 
-export default function FileBrowser({ title, favorites }: Props) {
+export default function FileBrowser({ title, favoritesOnly }: Props) {
   const organization = useOrganization();
   const user = useUser();
   const [query, setQuery] = useState("");
@@ -45,9 +45,14 @@ export default function FileBrowser({ title, favorites }: Props) {
 
   const files = useQuery(
     api.files.getFiles,
-    orgId ? { orgId, query, favorites } : "skip"
+    orgId ? { orgId, query, favorites: favoritesOnly } : "skip"
   );
   const isLoading = files === undefined;
+
+  const favorites = useQuery(
+    api.files.getAllFavorites,
+    orgId ? { orgId } : "skip"
+  );
 
   return (
     <div>
@@ -71,7 +76,17 @@ export default function FileBrowser({ title, favorites }: Props) {
 
           <div className="grid grid-cols-3 gap-4">
             {files?.map((file) => {
-              return <FileCard key={file._id} file={file} />;
+              return (
+                <FileCard
+                  key={file._id}
+                  file={file}
+                  isFavorite={
+                    favorites?.some(
+                      (favorite) => favorite.fileId === file._id
+                    ) || false
+                  }
+                />
+              );
             })}
           </div>
         </>

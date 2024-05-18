@@ -5,9 +5,6 @@ export const getUser = async (
   ctx: QueryCtx | MutationCtx,
   tokenIdentifier: string
 ) => {
-  console.log("ctx: ", !!ctx);
-  console.log("tokenIdentifier: ", tokenIdentifier);
-
   const user = await ctx.db
     .query("users")
     .withIndex("by_tokenIdentifier", (q) =>

@@ -40,9 +40,10 @@ import Image from "next/image";
 
 type Props = {
   file: Doc<"files">;
+  isFavorite: boolean;
 };
 
-function FileCardActions({ file }: Props) {
+function FileCardActions({ file, isFavorite }: Props) {
   const { toast } = useToast();
   const deleteFile = useMutation(api.files.deleteFile);
   const toggleFavorite = useMutation(api.files.toggleFavorite);
@@ -89,8 +90,11 @@ function FileCardActions({ file }: Props) {
             className="flex gap-1 items-center cursor-pointer"
             onClick={() => toggleFavorite({ fileId: file._id })}
           >
-            <StarIcon className="w-4 h-4" />
-            Favorite
+            <StarIcon
+              className="w-4 h-4"
+              fill={isFavorite ? "currentColor" : "transparent"}
+            />
+            {isFavorite ? "Unfavorite" : "Favorite"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -110,7 +114,7 @@ function getFileUrl(fileId: Id<"_storage">): string {
   return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${fileId}`;
 }
 
-export function FileCard({ file }: Props) {
+export function FileCard({ file, isFavorite }: Props) {
   const typeIcons = {
     image: <ImageIcon />,
     pdf: <FileTextIcon />,
@@ -128,7 +132,7 @@ export function FileCard({ file }: Props) {
         </CardTitle>
 
         <div className="absolute top-2 right-2">
-          <FileCardActions file={file} />
+          <FileCardActions file={file} isFavorite={isFavorite} />
         </div>
         {/* <CardDescription>Card Description</CardDescription> */}
       </CardHeader>
