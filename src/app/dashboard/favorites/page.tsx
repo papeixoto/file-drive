@@ -1,3 +1,9 @@
+import FileBrowser from "../_components/file-browser";
+
 export default function FavoritesPage() {
-  return <h1 className="text-4xl font-bold">Your Favorites</h1>;
+  return (
+    <div>
+      <FileBrowser title="Your Favorites" />
+    </div>
+  );
 }
