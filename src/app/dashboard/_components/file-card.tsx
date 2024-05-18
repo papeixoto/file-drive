@@ -94,6 +94,13 @@ function FileCardActions({ file, isFavorite }: Props) {
         <DropdownMenuContent>
           <DropdownMenuItem
             className="flex gap-1 items-center cursor-pointer"
+            onClick={() => window.open(getFileUrl(file.fileId))}
+          >
+            <FileIcon className="w-4 h-4" />
+            Download
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex gap-1 items-center cursor-pointer"
             onClick={() => toggleFavorite({ fileId: file._id })}
           >
             <StarIcon
@@ -101,13 +108,6 @@ function FileCardActions({ file, isFavorite }: Props) {
               fill={isFavorite ? "currentColor" : "transparent"}
             />
             {isFavorite ? "Unfavorite" : "Favorite"}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="flex gap-1 items-center cursor-pointer"
-            onClick={() => window.open(getFileUrl(file.fileId))}
-          >
-            <FileIcon className="w-4 h-4" />
-            Download
           </DropdownMenuItem>
           <Protect role="org:admin">
             <DropdownMenuSeparator />
@@ -159,7 +159,7 @@ export function FileCard({ file, isFavorite }: Props) {
   return (
     <Card>
       <CardHeader className="relative">
-        <CardTitle className="flex gap-2">
+        <CardTitle className="flex gap-2 text-base font-normal">
           {typeIcons[file.type]}
           {file.name}
         </CardTitle>
