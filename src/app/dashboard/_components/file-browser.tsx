@@ -10,6 +10,8 @@ import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { SearchBar } from "./search-bar";
 import { useState } from "react";
+import { DataTable } from "./file-table";
+import { columns } from "./columns";
 
 function Placeholder() {
   return (
@@ -59,6 +61,16 @@ export default function FileBrowser({
     orgId ? { orgId } : "skip"
   );
 
+  const modifiedFiles =
+    files?.map((file) => {
+      return {
+        ...file,
+        isFavorite: (favorites ?? [])?.some(
+          (favorite) => favorite.fileId === file._id
+        ),
+      };
+    }) ?? [];
+
   return (
     <div>
       {isLoading && (
@@ -79,19 +91,11 @@ export default function FileBrowser({
 
           {files.length === 0 && <Placeholder />}
 
+          <DataTable columns={columns} data={modifiedFiles} />
+
           <div className="grid grid-cols-3 gap-4">
-            {files?.map((file) => {
-              return (
-                <FileCard
-                  key={file._id}
-                  file={file}
-                  isFavorite={
-                    favorites?.some(
-                      (favorite) => favorite.fileId === file._id
-                    ) || false
-                  }
-                />
-              );
+            {modifiedFiles?.map((file) => {
+              return <FileCard key={file._id} file={file} />;
             })}
           </div>
         </>
