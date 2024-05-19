@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Doc, Id } from "../../../../convex/_generated/dataModel";
+import { Doc } from "../../../../convex/_generated/dataModel";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +31,7 @@ import { Protect } from "@clerk/nextjs";
 import clsx from "clsx";
 
 type Props = {
-  file: Doc<"files">;
+  file: Doc<"files"> & { url: string | null };
   isFavorite: boolean;
 };
 
@@ -81,7 +81,10 @@ export function FileCardActions({ file, isFavorite }: Props) {
         <DropdownMenuContent>
           <DropdownMenuItem
             className="flex gap-1 items-center cursor-pointer"
-            onClick={() => window.open(getFileUrl(file.fileId))}
+            onClick={() => {
+              if (!file.url) return;
+              window.open(file.url, "_blank");
+            }}
           >
             <FileIcon className="w-4 h-4" />
             Download
@@ -126,8 +129,4 @@ export function FileCardActions({ file, isFavorite }: Props) {
       </DropdownMenu>
     </>
   );
-}
-
-export function getFileUrl(fileId: Id<"_storage">): string {
-  return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${fileId}`;
 }
