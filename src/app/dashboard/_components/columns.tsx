@@ -8,9 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { api } from "../../../../convex/_generated/api";
 import { FileCardActions } from "./file-actions";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-
 function UserCell({ userId }: { userId: Id<"users"> }) {
   const userProfile = useQuery(api.users.getUserProfile, {
     userId: userId,
