@@ -24,7 +24,7 @@ import {
   TrashIcon,
   UndoIcon,
 } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useToast } from "@/components/ui/use-toast";
 import { Protect } from "@clerk/nextjs";
@@ -41,6 +41,7 @@ export function FileCardActions({ file, isFavorite }: Props) {
   const restoreFile = useMutation(api.files.restoreFile);
   const toggleFavorite = useMutation(api.files.toggleFavorite);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const me = useQuery(api.users.getMe);
 
   return (
     <>
@@ -99,7 +100,15 @@ export function FileCardActions({ file, isFavorite }: Props) {
             />
             {isFavorite ? "Unfavorite" : "Favorite"}
           </DropdownMenuItem>
-          <Protect role="org:admin">
+          <Protect
+            condition={(check) => {
+              return (
+                check({
+                  role: "org:admin",
+                }) || file.userId === me?._id
+              );
+            }}
+          >
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className={clsx("flex gap-1   items-center cursor-pointer", {
